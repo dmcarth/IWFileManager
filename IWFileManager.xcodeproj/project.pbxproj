@@ -27,7 +27,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		10AAA7F41D77842400B80663 /* Playground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Playground.playground; sourceTree = "<group>"; };
 		10B2040B1D777F7300B7299D /* IWFileManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = IWFileManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		10B2040E1D777F7300B7299D /* IWFileManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IWFileManager.h; sourceTree = "<group>"; };
 		10B204101D777F7300B7299D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -80,7 +79,6 @@
 		10B2040D1D777F7300B7299D /* IWFileManager */ = {
 			isa = PBXGroup;
 			children = (
-				10AAA7F41D77842400B80663 /* Playground.playground */,
 				10B2040E1D777F7300B7299D /* IWFileManager.h */,
 				10B204251D777F9000B7299D /* FileManager.swift */,
 				10B204271D77803C00B7299D /* File Models.swift */,
