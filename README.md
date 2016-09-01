@@ -11,7 +11,7 @@ I recommend Carthage for installing and managing IWFileManager. To install, add 
 
 ```
 github "dmcarth/IWFileManager" "master"
-``
+```
 
 ... and run `carthage update`.
 
@@ -20,7 +20,7 @@ For the sake of simplicity, IWFileManager functions are all performed by a singl
 
 ```Swift
 let fileManager = FileManager.sharedInstance
-``
+```
 
 It provides a nice, Swifty interface for basic file operations, including move, rename, and delete.
 
@@ -36,7 +36,7 @@ fileManager.rename(itemAtURL: fileURL, usingName: "New Name") { (newURL) in
 fileManager.delete(itemAtURL: fileURL) { 
 	print("Item deleted")
 }
-``
+```
 
 ... and some less common, but dead useful, query functions.
 
@@ -54,7 +54,7 @@ for node in nodes {
 // Test Folder (Folder)
 // - Test File.txt (File)
 // - Test File-1.text (File)
-``
+```
 
 File conflicts are automatically avoided by renaming the new URL. 
 
@@ -73,7 +73,7 @@ fileManager.createDirectory(named: "Folder", inDirectoryURL: directoryURL) { (ne
 fileManager.createTemplateProject(named: "Template", fromTemplateURL: templateURL, inDirectoryURL: directoryURL) { (newURL) in
 	print("\(newURL) created from template")
 }
-``
+```
 
 ### Error Handling
 IWFileManager is designed to, whereever possilbe, fail gracefully and quietly. Callback functions will only be performed if the operation was succesful. Otherwise, the callback is ignored. This may be changed in the future.
