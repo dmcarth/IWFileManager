@@ -27,6 +27,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		101318421D77E4C100E2660C /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		10AAA7F61D77A0BD00B80663 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		10B2040B1D777F7300B7299D /* IWFileManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = IWFileManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		10B2040E1D777F7300B7299D /* IWFileManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IWFileManager.h; sourceTree = "<group>"; };
 		10B204101D777F7300B7299D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -61,9 +63,11 @@
 		10B204011D777F7300B7299D = {
 			isa = PBXGroup;
 			children = (
+				101318421D77E4C100E2660C /* .gitignore */,
 				10B2040D1D777F7300B7299D /* IWFileManager */,
 				10B204191D777F7300B7299D /* IWFileManagerTests */,
 				10B2040C1D777F7300B7299D /* Products */,
+				10AAA7F61D77A0BD00B80663 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
