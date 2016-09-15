@@ -43,7 +43,7 @@ public class FileManager {
 	// MARK: - Query Methods
 	
 	public func directoryURLByAppendingPath(path: String) -> NSURL {
-		return documentsDirectoryURL.URLByAppendingPathComponent(path)
+		return documentsDirectoryURL.URLByAppendingPathComponent(path)!
 	}
 	
 	public func directoryModel(forDirectoryURL directoryURL: NSURL) -> [FileNode] {
@@ -101,7 +101,7 @@ public class FileManager {
 			var ext = (fileName as NSString).pathExtension
 			if ext.isEmpty { ext = "md" }
 			
-			let target = self.availableFileForBaseURL(baseURL, ext: ext)
+			let target = self.availableFileForBaseURL(baseURL!, ext: ext)
 			
 			let writeIntent = NSFileAccessIntent.writingIntentWithURL(target, options: [])
 			
@@ -124,7 +124,7 @@ public class FileManager {
 		coordinationQueue.addOperationWithBlock {
 			let baseURL = directoryURL.URLByAppendingPathComponent(directoryName, isDirectory: true)
 			
-			let target = self.availableDirectoryForBaseURL(baseURL)
+			let target = self.availableDirectoryForBaseURL(baseURL!)
 			
 			let writeIntent = NSFileAccessIntent.writingIntentWithURL(target, options: [])
 			
@@ -152,7 +152,7 @@ public class FileManager {
 		coordinationQueue.addOperationWithBlock {
 			let baseURL = directoryURL.URLByAppendingPathComponent(templateName, isDirectory: true)
 			
-			let target = self.availableDirectoryForBaseURL(baseURL)
+			let target = self.availableDirectoryForBaseURL(baseURL!)
 			
 			let readIntent = NSFileAccessIntent.readingIntentWithURL(templateURL, options: [])
 			let writeIntent = NSFileAccessIntent.writingIntentWithURL(target, options: [])
@@ -186,13 +186,13 @@ public class FileManager {
 			if isDirectory {
 				let baseURL = directoryURL.URLByAppendingPathComponent(sourceURL.lastPathComponent!)
 				
-				target = self.availableDirectoryForBaseURL(baseURL)
+				target = self.availableDirectoryForBaseURL(baseURL!)
 			} else {
 				let baseURL = directoryURL.URLByAppendingPathComponent((sourceURL.lastPathComponent! as NSString).stringByDeletingPathExtension)
 				
 				let ext = sourceURL.pathExtension!
 				
-				target = self.availableFileForBaseURL(baseURL, ext: ext)
+				target = self.availableFileForBaseURL(baseURL!, ext: ext)
 			}
 			
 			let readIntent = NSFileAccessIntent.readingIntentWithURL(sourceURL, options: [])
@@ -228,7 +228,7 @@ public class FileManager {
 			if isDirectory {
 				let baseURL = sourceURL.URLByDeletingLastPathComponent!.URLByAppendingPathComponent(name)
 				
-				target = self.availableDirectoryForBaseURL(baseURL)
+				target = self.availableDirectoryForBaseURL(baseURL!)
 			} else {
 				let baseURL = sourceURL.URLByDeletingLastPathComponent!.URLByAppendingPathComponent((name as NSString).stringByDeletingPathExtension)
 				
@@ -237,7 +237,7 @@ public class FileManager {
 					if let sourceExt = sourceURL.pathExtension { ext = sourceExt }
 				}
 				
-				target = self.availableFileForBaseURL(baseURL, ext: ext)
+				target = self.availableFileForBaseURL(baseURL!, ext: ext)
 			}
 			
 			let readIntent = NSFileAccessIntent.readingIntentWithURL(sourceURL, options: [])
@@ -293,13 +293,13 @@ public class FileManager {
 		
 		var nameSuffix = 1
 		
-		while target.checkPromisedItemIsReachableAndReturnError(nil) {
+		while target!.checkPromisedItemIsReachableAndReturnError(nil) {
 			target = NSURL(fileURLWithPath: baseURL.path! + "-\(nameSuffix).\(ext)")
 			
 			nameSuffix += 1
 		}
 		
-		return target
+		return target!
 	}
 	
 	func availableDirectoryForBaseURL(baseURL: NSURL) -> NSURL {
