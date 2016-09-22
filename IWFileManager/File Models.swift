@@ -7,26 +7,26 @@
 //
 
 public enum FileNodeType {
-	case File, Folder
+	case file, folder
 }
 
-public class FileNode: CustomStringConvertible {
+open class FileNode: CustomStringConvertible {
 	
-	public var name = ""
+	open var name = ""
 	
-	public var type: FileNodeType = .File
+	open var type: FileNodeType = .file
 	
-	public var level = 0
+	open var level = 0
 	
-	public var url = NSURL()
+	open var url: URL
 	
-	public init(url: NSURL, type: FileNodeType) {
+	public init(url: URL, type: FileNodeType) {
 		self.url = url
-		self.name = url.lastPathComponent!
+		self.name = url.lastPathComponent
 		self.type = type
 	}
 	
-	public var description: String {
+	open var description: String {
 		var ticks = ""
 		for _ in 0..<level {
 			ticks += "- "

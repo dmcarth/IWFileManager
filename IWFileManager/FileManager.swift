@@ -6,34 +6,34 @@
 //  Copyright © 2016 Dylan McArthur. All rights reserved.
 //
 
-public class FileManager {
+open class FileManager {
 	
 	// MARK: - Singleton
 	
-	public static let sharedManager: FileManager = {
-		let fileManager = NSFileManager()
-		let documentsDirectory = fileManager.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
+	open static let sharedManager: FileManager = {
+		let fileManager = Foundation.FileManager()
+		let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
 		
 		let instance = FileManager(fileManager: fileManager, documentsDirectory: documentsDirectory)
 		
 		return instance
 	}()
 	
-	private init(fileManager: NSFileManager, documentsDirectory: NSURL) {
+	fileprivate init(fileManager: Foundation.FileManager, documentsDirectory: URL) {
 		self.fileManager = fileManager
 		self.documentsDirectoryURL = documentsDirectory
 	}
 	
 	// MARK: - Properties
 	
-	public typealias Callback = (NSURL)->Void
+	public typealias Callback = (URL)->Void
 	
-	let fileManager: NSFileManager
+	let fileManager: Foundation.FileManager
 	
-	let documentsDirectoryURL: NSURL
+	let documentsDirectoryURL: URL
 	
-	let coordinationQueue: NSOperationQueue = {
-		let coordinationQueue = NSOperationQueue()
+	let coordinationQueue: OperationQueue = {
+		let coordinationQueue = OperationQueue()
 		
 		coordinationQueue.name = "com.filmstoriescode.Ibsen.fileManager.coordinationQueue"
 		
@@ -42,21 +42,21 @@ public class FileManager {
 	
 	// MARK: - Query Methods
 	
-	public func directoryURLByAppendingPath(path: String) -> NSURL {
-		return documentsDirectoryURL.URLByAppendingPathComponent(path)!
+	open func directoryURLByAppendingPath(_ path: String) -> URL {
+		return documentsDirectoryURL.appendingPathComponent(path)
 	}
 	
-	public func directoryModel(forDirectoryURL directoryURL: NSURL) -> [FileNode] {
-		let files = try! fileManager.contentsOfDirectoryAtURL(directoryURL, includingPropertiesForKeys: [kCFURLContentModificationDateKey as String, kCFURLIsDirectoryKey as String], options: [])
+	open func directoryModel(forDirectoryURL directoryURL: URL) -> [FileNode] {
+		let files = try! fileManager.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: [URLResourceKey(rawValue: kCFURLContentModificationDateKey as String as String), URLResourceKey(rawValue: kCFURLIsDirectoryKey as String as String)], options: [])
 		
 		var model = [FileNode]()
 		
 		for file in files {
 			var p: AnyObject?
-			try! file.getResourceValue(&p, forKey: NSURLIsDirectoryKey)
+			try! (file as NSURL).getResourceValue(&p, forKey: URLResourceKey.isDirectoryKey)
 			let isDirectory = p as! Bool
 			
-			let type: FileNodeType = (isDirectory) == true ? .Folder : .File
+			let type: FileNodeType = (isDirectory) == true ? .folder : .file
 			let node = FileNode(url: file, type: type)
 			
 			model.append(node)
@@ -65,22 +65,22 @@ public class FileManager {
 		return model
 	}
 	
-	public func deepDirectoryModel(forDirectoryURL directoryURL: NSURL) -> [FileNode] {
+	open func deepDirectoryModel(forDirectoryURL directoryURL: URL) -> [FileNode] {
 		var nodes = [FileNode]()
 		
-		let enumerator = fileManager.enumeratorAtURL(directoryURL, includingPropertiesForKeys: [NSURLIsDirectoryKey], options: .SkipsHiddenFiles, errorHandler: nil)
+		let enumerator = fileManager.enumerator(at: directoryURL, includingPropertiesForKeys: [URLResourceKey.isDirectoryKey], options: .skipsHiddenFiles, errorHandler: nil)
 		
-		while let fileURL = enumerator?.nextObject() as? NSURL {
+		while let fileURL = enumerator?.nextObject() as? URL {
 			
 			var p: AnyObject?
-			try! fileURL.getResourceValue(&p, forKey: NSURLIsDirectoryKey)
+			try! (fileURL as NSURL).getResourceValue(&p, forKey: URLResourceKey.isDirectoryKey)
 			let isDirectory = p as! Bool
 			
 			var node: FileNode
 			if isDirectory {
-				node = FileNode(url: fileURL, type: .Folder)
+				node = FileNode(url: fileURL, type: .folder)
 			} else {
-				node = FileNode(url: fileURL, type: .File)
+				node = FileNode(url: fileURL, type: .file)
 			}
 			node.level = enumerator!.level - 1
 			
@@ -92,52 +92,52 @@ public class FileManager {
 	
 	// MARK: - File System Methods
 	
-	public func createEmptyTextFile(named fileName: String, inDirectoryURL directoryURL: NSURL, completion: Callback?) {
-		let data = ("").dataUsingEncoding(NSUTF8StringEncoding)!
+	open func createEmptyTextFile(named fileName: String, inDirectoryURL directoryURL: URL, completion: Callback?) {
+		let data = ("").data(using: String.Encoding.utf8)!
 		
-		coordinationQueue.addOperationWithBlock {
-			let baseURL = directoryURL.URLByAppendingPathComponent((fileName as NSString).stringByDeletingPathExtension)
+		coordinationQueue.addOperation {
+			let baseURL = directoryURL.appendingPathComponent((fileName as NSString).deletingPathExtension)
 			
 			var ext = (fileName as NSString).pathExtension
 			if ext.isEmpty { ext = "md" }
 			
-			let target = self.availableFileForBaseURL(baseURL!, ext: ext)
+			let target = self.availableFileForBaseURL(baseURL, ext: ext)
 			
-			let writeIntent = NSFileAccessIntent.writingIntentWithURL(target, options: [])
+			let writeIntent = NSFileAccessIntent.writingIntent(with: target, options: [])
 			
-			NSFileCoordinator().coordinateAccessWithIntents([writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
+			NSFileCoordinator().coordinate(with: [writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
 				if error != nil {
 					return
 				}
 				
-				self.fileManager.createFileAtPath(writeIntent.URL.path!, contents: data, attributes: nil)
+				self.fileManager.createFile(atPath: writeIntent.url.path, contents: data, attributes: nil)
 				
-				NSOperationQueue.mainQueue().addOperationWithBlock({
-					completion?(writeIntent.URL)
+				OperationQueue.main.addOperation({
+					completion?(writeIntent.url)
 				})
 			})
 		}
 	}
 	
-	public func createDirectory(named directoryName: String, inDirectoryURL directoryURL: NSURL, completion: Callback?) {
+	open func createDirectory(named directoryName: String, inDirectoryURL directoryURL: URL, completion: Callback?) {
 		
-		coordinationQueue.addOperationWithBlock {
-			let baseURL = directoryURL.URLByAppendingPathComponent(directoryName, isDirectory: true)
+		coordinationQueue.addOperation {
+			let baseURL = directoryURL.appendingPathComponent(directoryName, isDirectory: true)
 			
-			let target = self.availableDirectoryForBaseURL(baseURL!)
+			let target = self.availableDirectoryForBaseURL(baseURL)
 			
-			let writeIntent = NSFileAccessIntent.writingIntentWithURL(target, options: [])
+			let writeIntent = NSFileAccessIntent.writingIntent(with: target, options: [])
 			
-			NSFileCoordinator().coordinateAccessWithIntents([writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
+			NSFileCoordinator().coordinate(with: [writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
 				if error != nil {
 					return
 				}
 				
 				do {
-					try self.fileManager.createDirectoryAtURL(writeIntent.URL, withIntermediateDirectories: true, attributes: nil)
+					try self.fileManager.createDirectory(at: writeIntent.url, withIntermediateDirectories: true, attributes: nil)
 					
-					NSOperationQueue.mainQueue().addOperationWithBlock({
-						completion?(writeIntent.URL)
+					OperationQueue.main.addOperation({
+						completion?(writeIntent.url)
 					})
 				} catch {
 					fatalError("Unexpected error creating folder: \(error)")
@@ -147,26 +147,26 @@ public class FileManager {
 		
 	}
 	
-	public func createTemplateProject(named templateName: String, fromTemplateURL templateURL: NSURL, inDirectoryURL directoryURL: NSURL, completion: Callback?) {
+	open func createTemplateProject(named templateName: String, fromTemplateURL templateURL: URL, inDirectoryURL directoryURL: URL, completion: Callback?) {
 		
-		coordinationQueue.addOperationWithBlock {
-			let baseURL = directoryURL.URLByAppendingPathComponent(templateName, isDirectory: true)
+		coordinationQueue.addOperation {
+			let baseURL = directoryURL.appendingPathComponent(templateName, isDirectory: true)
 			
-			let target = self.availableDirectoryForBaseURL(baseURL!)
+			let target = self.availableDirectoryForBaseURL(baseURL)
 			
-			let readIntent = NSFileAccessIntent.readingIntentWithURL(templateURL, options: [])
-			let writeIntent = NSFileAccessIntent.writingIntentWithURL(target, options: [])
+			let readIntent = NSFileAccessIntent.readingIntent(with: templateURL, options: [])
+			let writeIntent = NSFileAccessIntent.writingIntent(with: target, options: [])
 			
-			NSFileCoordinator().coordinateAccessWithIntents([readIntent, writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
+			NSFileCoordinator().coordinate(with: [readIntent, writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
 				if error != nil {
 					return
 				}
 				
 				do {
-					try self.fileManager.copyItemAtURL(readIntent.URL, toURL: writeIntent.URL)
+					try self.fileManager.copyItem(at: readIntent.url, to: writeIntent.url)
 					
-					NSOperationQueue.mainQueue().addOperationWithBlock({
-						completion?(writeIntent.URL)
+					OperationQueue.main.addOperation({
+						completion?(writeIntent.url)
 					})
 				} catch {
 					fatalError("Unexpected error creating template project: \(error)")
@@ -175,39 +175,39 @@ public class FileManager {
 		}
 	}
 	
-	public func move(itemAtURL sourceURL: NSURL, intoDirectoryURL directoryURL: NSURL, completion: Callback?) {
+	open func move(itemAtURL sourceURL: URL, intoDirectoryURL directoryURL: URL, completion: Callback?) {
 		
-		coordinationQueue.addOperationWithBlock {
+		coordinationQueue.addOperation {
 			
 			let isDirectory = self.checkPromisedURLIsDirectory(sourceURL)
 			
-			var target = NSURL()
+			var target: URL
 			
 			if isDirectory {
-				let baseURL = directoryURL.URLByAppendingPathComponent(sourceURL.lastPathComponent!)
+				let baseURL = directoryURL.appendingPathComponent(sourceURL.lastPathComponent)
 				
-				target = self.availableDirectoryForBaseURL(baseURL!)
+				target = self.availableDirectoryForBaseURL(baseURL)
 			} else {
-				let baseURL = directoryURL.URLByAppendingPathComponent((sourceURL.lastPathComponent! as NSString).stringByDeletingPathExtension)
+				let baseURL = directoryURL.appendingPathComponent((sourceURL.lastPathComponent as NSString).deletingPathExtension)
 				
-				let ext = sourceURL.pathExtension!
+				let ext = sourceURL.pathExtension
 				
-				target = self.availableFileForBaseURL(baseURL!, ext: ext)
+				target = self.availableFileForBaseURL(baseURL, ext: ext)
 			}
 			
-			let readIntent = NSFileAccessIntent.readingIntentWithURL(sourceURL, options: [])
-			let writeIntent = NSFileAccessIntent.writingIntentWithURL(target, options: [])
+			let readIntent = NSFileAccessIntent.readingIntent(with: sourceURL, options: [])
+			let writeIntent = NSFileAccessIntent.writingIntent(with: target, options: [])
 			
-			NSFileCoordinator().coordinateAccessWithIntents([readIntent, writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
+			NSFileCoordinator().coordinate(with: [readIntent, writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
 				if error != nil {
 					return
 				}
 				
 				do {
-					try self.fileManager.moveItemAtURL(readIntent.URL, toURL: writeIntent.URL)
+					try self.fileManager.moveItem(at: readIntent.url, to: writeIntent.url)
 					
-					NSOperationQueue.mainQueue().addOperationWithBlock({
-						completion?(writeIntent.URL)
+					OperationQueue.main.addOperation({
+						completion?(writeIntent.url)
 					})
 				} catch {
 					fatalError("Unexpected error moving: \(error)")
@@ -217,42 +217,43 @@ public class FileManager {
 		
 	}
 	
-	public func rename(itemAtURL sourceURL: NSURL, usingName name: String, completion: Callback?) {
+	open func rename(itemAtURL sourceURL: URL, usingName name: String, completion: Callback?) {
 		
-		coordinationQueue.addOperationWithBlock {
+		coordinationQueue.addOperation {
 			
 			let isDirectory = self.checkPromisedURLIsDirectory(sourceURL)
 			
-			var target = NSURL()
+			var target: URL
 			
 			if isDirectory {
-				let baseURL = sourceURL.URLByDeletingLastPathComponent!.URLByAppendingPathComponent(name)
+				let baseURL = sourceURL.deletingLastPathComponent().appendingPathComponent(name)
 				
-				target = self.availableDirectoryForBaseURL(baseURL!)
+				target = self.availableDirectoryForBaseURL(baseURL)
 			} else {
-				let baseURL = sourceURL.URLByDeletingLastPathComponent!.URLByAppendingPathComponent((name as NSString).stringByDeletingPathExtension)
+				let baseURL = sourceURL.deletingLastPathComponent().appendingPathComponent((name as NSString).deletingPathExtension)
 				
 				var ext = (name as NSString).pathExtension
 				if ext.isEmpty {
-					if let sourceExt = sourceURL.pathExtension { ext = sourceExt }
+					let sourceExt = sourceURL.pathExtension
+					if sourceExt.isEmpty != true { ext = sourceExt }
 				}
 				
-				target = self.availableFileForBaseURL(baseURL!, ext: ext)
+				target = self.availableFileForBaseURL(baseURL, ext: ext)
 			}
 			
-			let readIntent = NSFileAccessIntent.readingIntentWithURL(sourceURL, options: [])
-			let writeIntent = NSFileAccessIntent.writingIntentWithURL(target, options: [])
+			let readIntent = NSFileAccessIntent.readingIntent(with: sourceURL, options: [])
+			let writeIntent = NSFileAccessIntent.writingIntent(with: target, options: [])
 			
-			NSFileCoordinator().coordinateAccessWithIntents([readIntent, writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
+			NSFileCoordinator().coordinate(with: [readIntent, writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
 				if error != nil {
 					return
 				}
 				
 				do {
-					try self.fileManager.moveItemAtURL(readIntent.URL, toURL: writeIntent.URL)
+					try self.fileManager.moveItem(at: readIntent.url, to: writeIntent.url)
 					
-					NSOperationQueue.mainQueue().addOperationWithBlock({
-						completion?(writeIntent.URL)
+					OperationQueue.main.addOperation({
+						completion?(writeIntent.url)
 					})
 				} catch {
 					fatalError("Unexpected error renaming: \(error)")
@@ -262,20 +263,20 @@ public class FileManager {
 		
 	}
 	
-	public func delete(itemAtURL url: NSURL, completion: ()->Void) {
+	open func delete(itemAtURL url: URL, completion: @escaping ()->Void) {
 		
-		coordinationQueue.addOperationWithBlock {
-			let writeIntent = NSFileAccessIntent.writingIntentWithURL(url, options: .ForDeleting)
+		coordinationQueue.addOperation {
+			let writeIntent = NSFileAccessIntent.writingIntent(with: url, options: .forDeleting)
 			
-			NSFileCoordinator().coordinateAccessWithIntents([writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
+			NSFileCoordinator().coordinate(with: [writeIntent], queue: self.coordinationQueue, byAccessor: { (error) in
 				if error != nil {
 					return
 				}
 				
 				do {
-					try self.fileManager.removeItemAtURL(writeIntent.URL)
+					try self.fileManager.removeItem(at: writeIntent.url)
 					
-					NSOperationQueue.mainQueue().addOperationWithBlock({
+					OperationQueue.main.addOperation({
 						completion()
 					})
 				} catch {
@@ -288,27 +289,13 @@ public class FileManager {
 	
 	// MARK: - Private Helper Functions
 	
-	func availableFileForBaseURL(baseURL: NSURL, ext: String) -> NSURL {
-		var target = baseURL.URLByAppendingPathExtension(ext)
+	func availableFileForBaseURL(_ baseURL: URL, ext: String) -> URL {
+		var target = baseURL.appendingPathExtension(ext)
 		
 		var nameSuffix = 1
 		
-		while target!.checkPromisedItemIsReachableAndReturnError(nil) {
-			target = NSURL(fileURLWithPath: baseURL.path! + "-\(nameSuffix).\(ext)")
-			
-			nameSuffix += 1
-		}
-		
-		return target!
-	}
-	
-	func availableDirectoryForBaseURL(baseURL: NSURL) -> NSURL {
-		var target = baseURL
-		
-		var nameSuffix = 1
-		
-		while target.checkPromisedItemIsReachableAndReturnError(nil) {
-			target = NSURL(fileURLWithPath: baseURL.path! + "-\(nameSuffix)", isDirectory: true)
+		while (target as NSURL).checkPromisedItemIsReachableAndReturnError(nil) {
+			target = URL(fileURLWithPath: baseURL.path + "-\(nameSuffix).\(ext)")
 			
 			nameSuffix += 1
 		}
@@ -316,11 +303,25 @@ public class FileManager {
 		return target
 	}
 	
-	func checkPromisedURLIsDirectory(url: NSURL) -> Bool {
+	func availableDirectoryForBaseURL(_ baseURL: URL) -> URL {
+		var target = baseURL
+		
+		var nameSuffix = 1
+		
+		while (target as NSURL).checkPromisedItemIsReachableAndReturnError(nil) {
+			target = URL(fileURLWithPath: baseURL.path + "-\(nameSuffix)", isDirectory: true)
+			
+			nameSuffix += 1
+		}
+		
+		return target
+	}
+	
+	func checkPromisedURLIsDirectory(_ url: URL) -> Bool {
 		var p: AnyObject?
 		
-		if url.checkPromisedItemIsReachableAndReturnError(nil) {
-			try! url.getResourceValue(&p, forKey: NSURLIsDirectoryKey)
+		if (url as NSURL).checkPromisedItemIsReachableAndReturnError(nil) {
+			try! (url as NSURL).getResourceValue(&p, forKey: URLResourceKey.isDirectoryKey)
 			return p as! Bool
 		}
 		
