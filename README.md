@@ -4,7 +4,7 @@ A multi-threaded wrapper for NSFileManager, designed to make writing document-ba
 It was originally written as part of Ibsen.
 
 ## Dependencies
-IWFileManager is written in Swift 2.2 and requires Xcode 7 to run. No other dependencies are required. 
+IWFileManager is written in Swift 3 and requires Xcode 8 to run. No other dependencies are required. 
 
 ## Installation
 I recommend Carthage for installing and managing IWFileManager. To install, add this to your Cartfile:
@@ -19,7 +19,7 @@ github "dmcarth/IWFileManager" "master"
 For the sake of simplicity, IWFileManager functions are all performed by a singleton with access to its own private coordinationQueue.
 
 ```Swift
-let fileManager = FileManager.sharedInstance
+let fileManager = IWFileManager.sharedInstance
 ```
 
 It provides a nice, Swifty interface for basic file operations, including move, rename, and delete.
@@ -48,12 +48,6 @@ let nodes = fileManager.deepDirectoryModel(forDirectoryURL: directoryURL)
 for node in nodes {
 	print(node)
 }
-
-// Prints: 
-// Empty Folder (Folder)
-// Test Folder (Folder)
-// - Test File.txt (File)
-// - Test File-1.text (File)
 ```
 
 File conflicts are automatically avoided by renaming the new URL. 
