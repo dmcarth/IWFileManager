@@ -11,9 +11,9 @@ import XCTest
 
 class FileManagerTests: XCTestCase {
 
-	let fileManager = FileManager.sharedManager
+	let fileManager = IWFileManager.sharedManager
 	
-	var directoryURL = NSURL()
+	var directoryURL: URL!
 	
 	override func setUp() {
 		super.setUp()
@@ -30,25 +30,25 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func clearDirectory() {
-		let fm = NSFileManager()
-		let files = try! fm.contentsOfDirectoryAtURL(directoryURL, includingPropertiesForKeys: nil, options: [])
+		let fm = Foundation.FileManager()
+		let files = try! fm.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: nil, options: [])
 		
 		for file in files {
-			try! fm.removeItemAtURL(file)
+			try! fm.removeItem(at: file)
 		}
 	}
 	
 	// MARK: - Tests
 	
 	func testCreateEmptyTextFile() {
-		let expectation = expectationWithDescription("Creating text file")
+		let expectation = self.expectation(description: "Creating text file")
 		
 		fileManager.createEmptyTextFile(named: "File.md", inDirectoryURL: directoryURL) { (url) in
-			XCTAssert(url.checkResourceIsReachableAndReturnError(nil))
+			XCTAssert(FileManager.default.fileExists(atPath: url.path))
 			expectation.fulfill()
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -56,7 +56,7 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testCreateDuplicateTextFile() {
-		let expectation = expectationWithDescription("Create duplicate text file")
+		let expectation = self.expectation(description: "Create duplicate text file")
 		
 		fileManager.createEmptyTextFile(named: "File.md", inDirectoryURL: directoryURL) { (url) in
 			
@@ -67,7 +67,7 @@ class FileManagerTests: XCTestCase {
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -75,14 +75,14 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testCreateDirectory() {
-		let expectation = expectationWithDescription("Create directory")
+		let expectation = self.expectation(description: "Create directory")
 		
 		fileManager.createDirectory(named: "Folder", inDirectoryURL: directoryURL) { (url) in
-			XCTAssert(url.checkResourceIsReachableAndReturnError(nil))
+			XCTAssert(FileManager.default.fileExists(atPath: url.path))
 			expectation.fulfill()
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -90,7 +90,7 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testCreateDuplicateDirectory() {
-		let expectation = expectationWithDescription("Create duplicate directory")
+		let expectation = self.expectation(description: "Create duplicate directory")
 		
 		fileManager.createDirectory(named: "Folder", inDirectoryURL: directoryURL) { (url) in
 			
@@ -101,7 +101,7 @@ class FileManagerTests: XCTestCase {
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -109,16 +109,16 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testCreateTemplateProject() {
-		let expectation = expectationWithDescription("Create template project")
+		let expectation = self.expectation(description: "Create template project")
 		
-		let templateURL = NSBundle(forClass: FileManagerTests.self).URLForResource("TemplateProject", withExtension: nil)!
+		let templateURL = Bundle(for: FileManagerTests.self).url(forResource: "TemplateProject", withExtension: nil)!
 		
 		fileManager.createTemplateProject(named: "Template", fromTemplateURL: templateURL, inDirectoryURL: directoryURL) { (url) in
-			XCTAssert(url.checkPromisedItemIsReachableAndReturnError(nil))
+			XCTAssert(FileManager.default.fileExists(atPath: url.path))
 			expectation.fulfill()
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -126,9 +126,9 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testCreateDuplicatTemplateProject() {
-		let expectation = expectationWithDescription("Create duplicate template project")
+		let expectation = self.expectation(description: "Create duplicate template project")
 		
-		let templateURL = NSBundle(forClass: FileManagerTests.self).URLForResource("TemplateProject", withExtension: nil)!
+		let templateURL = Bundle(for: FileManagerTests.self).url(forResource: "TemplateProject", withExtension: nil)!
 		
 		fileManager.createTemplateProject(named: "Novel", fromTemplateURL: templateURL, inDirectoryURL: directoryURL) { (url) in
 			
@@ -139,7 +139,7 @@ class FileManagerTests: XCTestCase {
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -147,15 +147,15 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testMoveFile() {
-		let expectation = expectationWithDescription("Move file")
+		let expectation = self.expectation(description: "Move file")
 		
 		fileManager.createEmptyTextFile(named: "File.md", inDirectoryURL: directoryURL) { (fileURL1) in
 			
 			self.fileManager.createDirectory(named: "Folder", inDirectoryURL: self.directoryURL, completion: { (folderURL) in
 				
 				self.fileManager.move(itemAtURL: fileURL1, intoDirectoryURL: folderURL, completion: { (fileURL2) in
-					XCTAssert(fileURL2.checkPromisedItemIsReachableAndReturnError(nil))
-					XCTAssert(!fileURL1.checkPromisedItemIsReachableAndReturnError(nil))
+					XCTAssert(FileManager.default.fileExists(atPath: fileURL2.path))
+					XCTAssert(FileManager.default.fileExists(atPath: fileURL1.path) == false)
 					expectation.fulfill()
 				})
 				
@@ -163,7 +163,7 @@ class FileManagerTests: XCTestCase {
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -171,7 +171,7 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testMoveFileToDuplicate() {
-		let expectation = expectationWithDescription("Move file to duplicate")
+		let expectation = self.expectation(description: "Move file to duplicate")
 		
 		fileManager.createEmptyTextFile(named: "File.md", inDirectoryURL: directoryURL) { (fileURL1) in
 			
@@ -180,7 +180,7 @@ class FileManagerTests: XCTestCase {
 				self.fileManager.createEmptyTextFile(named: "File.md", inDirectoryURL: folderURL, completion: { (fileURL2) in
 					
 					self.fileManager.move(itemAtURL: fileURL1, intoDirectoryURL: folderURL, completion: { (fileURL3) in
-						XCTAssertEqual(fileURL3.lastPathComponent!, "File-1.md")
+						XCTAssertEqual(fileURL3.lastPathComponent, "File-1.md")
 						expectation.fulfill()
 					})
 					
@@ -190,7 +190,7 @@ class FileManagerTests: XCTestCase {
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -198,14 +198,14 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testMoveDirectory() {
-		let expectation = expectationWithDescription("Move folder")
+		let expectation = self.expectation(description: "Move folder")
 		
 		fileManager.createDirectory(named: "Folder", inDirectoryURL: directoryURL) { (folderURL1) in
 			
 			self.fileManager.createDirectory(named: "SmFolder", inDirectoryURL: self.directoryURL, completion: { (folderURL2) in
 				
 				self.fileManager.move(itemAtURL: folderURL2, intoDirectoryURL: folderURL1, completion: { (url) in
-					let comps = url.pathComponents!
+					let comps = url.pathComponents
 					let rel = comps[comps.count - 2] + "/" + comps[comps.count-1]
 					XCTAssertEqual(rel, "Folder/SmFolder")
 					expectation.fulfill()
@@ -215,7 +215,7 @@ class FileManagerTests: XCTestCase {
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -223,19 +223,19 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testRenameFile() {
-		let expectation = expectationWithDescription("Rename file")
+		let expectation = self.expectation(description: "Rename file")
 		
 		fileManager.createEmptyTextFile(named: "File.md", inDirectoryURL: directoryURL) { (url) in
 			
 			self.fileManager.rename(itemAtURL: url, usingName: "NewFile.md", completion: { (newURL) in
-				XCTAssert(!url.checkPromisedItemIsReachableAndReturnError(nil))
-				XCTAssertEqual(newURL.lastPathComponent!, "NewFile.md")
+				XCTAssert(FileManager.default.fileExists(atPath: url.path) == false)
+				XCTAssertEqual(newURL.lastPathComponent, "NewFile.md")
 				expectation.fulfill()
 			})
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -243,20 +243,20 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testRenameDirectory() {
-		let expectation = expectationWithDescription("Rename folder")
+		let expectation = self.expectation(description: "Rename folder")
 		
 		fileManager.createDirectory(named: "Folder", inDirectoryURL: directoryURL) { (folderURL) in
 			
 			self.fileManager.rename(itemAtURL: folderURL, usingName: "NewFolder", completion: { (url) in
-				XCTAssert(!folderURL.checkPromisedItemIsReachableAndReturnError(nil))
+				XCTAssert(FileManager.default.fileExists(atPath: folderURL.path) == false)
 				XCTAssertEqual(url.lastPathComponent, "NewFolder")
-				XCTAssert(url.checkPromisedItemIsReachableAndReturnError(nil))
+				XCTAssert(FileManager.default.fileExists(atPath: url.path))
 				expectation.fulfill()
 			})
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -264,16 +264,16 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testDelete() {
-		let expectation = expectationWithDescription("delete file")
+		let expectation = self.expectation(description: "delete file")
 		
 		fileManager.createEmptyTextFile(named: "File.md", inDirectoryURL: directoryURL) { (url) in
 			self.fileManager.delete(itemAtURL: url, completion: {
-				XCTAssert(!url.checkPromisedItemIsReachableAndReturnError(nil))
+				XCTAssert(FileManager.default.fileExists(atPath: url.path) == false)
 				expectation.fulfill()
 			})
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}
@@ -281,7 +281,7 @@ class FileManagerTests: XCTestCase {
 	}
 	
 	func testDeepDirectoryModel() {
-		let expectation = expectationWithDescription("delete file")
+		let expectation = self.expectation(description: "delete file")
 		
 		fileManager.createDirectory(named: "Folder", inDirectoryURL: directoryURL) { (folderURL1) in
 			
@@ -299,7 +299,7 @@ class FileManagerTests: XCTestCase {
 			
 		}
 		
-		waitForExpectationsWithTimeout(5) { (error) in
+		waitForExpectations(timeout: 5) { (error) in
 			if let error = error {
 				XCTFail("\(error)")
 			}

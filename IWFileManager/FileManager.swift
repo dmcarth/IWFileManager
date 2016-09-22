@@ -6,15 +6,15 @@
 //  Copyright © 2016 Dylan McArthur. All rights reserved.
 //
 
-open class FileManager {
+open class IWFileManager {
 	
 	// MARK: - Singleton
 	
-	open static let sharedManager: FileManager = {
+	open static let sharedManager: IWFileManager = {
 		let fileManager = Foundation.FileManager()
 		let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
 		
-		let instance = FileManager(fileManager: fileManager, documentsDirectory: documentsDirectory)
+		let instance = IWFileManager(fileManager: fileManager, documentsDirectory: documentsDirectory)
 		
 		return instance
 	}()
@@ -35,7 +35,7 @@ open class FileManager {
 	let coordinationQueue: OperationQueue = {
 		let coordinationQueue = OperationQueue()
 		
-		coordinationQueue.name = "com.filmstoriescode.Ibsen.fileManager.coordinationQueue"
+		coordinationQueue.name = "com.dylanthejoel.IWFileManager.fileManager.coordinationQueue"
 		
 		return coordinationQueue
 	}()
