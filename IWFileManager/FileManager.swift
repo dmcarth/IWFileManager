@@ -42,53 +42,41 @@ open class IWFileManager {
 	
 	// MARK: - Query Methods
 	
+	/// Convenience method for creating URLs with ~/Documents as the root directory.
+	///
+	/// - parameter path: Path to append to root directory.
+	///
+	/// - returns: A URL with ~/Documents as root directory to given path component.
 	open func directoryURLByAppendingPath(_ path: String) -> URL {
 		return documentsDirectoryURL.appendingPathComponent(path)
 	}
 	
-	open func directoryModel(forDirectoryURL directoryURL: URL) -> [FileNode] {
-		let files = try! fileManager.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: [URLResourceKey(rawValue: kCFURLContentModificationDateKey as String as String), URLResourceKey(rawValue: kCFURLIsDirectoryKey as String as String)], options: [])
+	
+	/// Performs a deep search on the given directory URL for files and folders.
+	///
+	/// - parameter for: A valid directory URL to search for files and folders.
+	///
+	/// - returns: The root node of a tree representing the given URL.
+	public func directoryModel(for url: URL) throws -> DirectoryTreeNode {
+		let node = DirectoryTreeNode(url: url)
 		
-		var model = [FileNode]()
+		let keys = try url.resourceValues(forKeys: [.isDirectoryKey])
 		
-		for file in files {
-			var p: AnyObject?
-			try! (file as NSURL).getResourceValue(&p, forKey: URLResourceKey.isDirectoryKey)
-			let isDirectory = p as! Bool
+		if keys.isDirectory! {
 			
-			let type: FileNodeType = (isDirectory) == true ? .folder : .file
-			let node = FileNode(url: file, type: type)
+			let contents = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles])
 			
-			model.append(node)
+			for subURL in contents {
+				let child = try directoryModel(for: subURL)
+				child.type = .folder
+				node.addChild(child)
+			}
+			
 		}
 		
-		return model
+		return node
 	}
 	
-	open func deepDirectoryModel(forDirectoryURL directoryURL: URL) -> [FileNode] {
-		var nodes = [FileNode]()
-		
-		let enumerator = fileManager.enumerator(at: directoryURL, includingPropertiesForKeys: [URLResourceKey.isDirectoryKey], options: .skipsHiddenFiles, errorHandler: nil)
-		
-		while let fileURL = enumerator?.nextObject() as? URL {
-			
-			var p: AnyObject?
-			try! (fileURL as NSURL).getResourceValue(&p, forKey: URLResourceKey.isDirectoryKey)
-			let isDirectory = p as! Bool
-			
-			var node: FileNode
-			if isDirectory {
-				node = FileNode(url: fileURL, type: .folder)
-			} else {
-				node = FileNode(url: fileURL, type: .file)
-			}
-			node.level = enumerator!.level - 1
-			
-			nodes.append(node)
-		}
-		
-		return nodes
-	}
 	
 	// MARK: - File System Methods
 	
