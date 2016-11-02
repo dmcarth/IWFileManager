@@ -17,6 +17,7 @@ DerivedData
 xcuserdata
 
 ## Other
+*.playground
 *.xccheckout
 *.moved-aside
 *.xcuserstate
