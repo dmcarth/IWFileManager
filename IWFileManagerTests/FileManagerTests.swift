@@ -279,31 +279,5 @@ class FileManagerTests: XCTestCase {
 			}
 		}
 	}
-	
-	func testDeepDirectoryModel() {
-		let expectation = self.expectation(description: "delete file")
-		
-		fileManager.createDirectory(named: "Folder", inDirectoryURL: directoryURL) { (folderURL1) in
-			
-			self.fileManager.createEmptyTextFile(named: "File.md", inDirectoryURL: self.directoryURL, completion: { (fileURL) in
-				
-				self.fileManager.createDirectory(named: "SmFolder", inDirectoryURL: folderURL1, completion: { (folderURL2) in
-					
-					let nodes = self.fileManager.deepDirectoryModel(forDirectoryURL: self.directoryURL)
-					XCTAssertEqual(nodes.count, 3)
-					expectation.fulfill()
-					
-				})
-				
-			})
-			
-		}
-		
-		waitForExpectations(timeout: 5) { (error) in
-			if let error = error {
-				XCTFail("\(error)")
-			}
-		}
-	}
 
 }
