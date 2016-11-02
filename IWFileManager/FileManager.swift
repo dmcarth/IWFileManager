@@ -6,11 +6,11 @@
 //  Copyright © 2016 Dylan McArthur. All rights reserved.
 //
 
-open class IWFileManager {
+public class IWFileManager {
 	
 	// MARK: - Singleton
 	
-	open static let sharedManager: IWFileManager = {
+	public static let sharedManager: IWFileManager = {
 		let fileManager = Foundation.FileManager()
 		let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
 		
@@ -47,7 +47,7 @@ open class IWFileManager {
 	/// - parameter path: Path to append to root directory.
 	///
 	/// - returns: A URL with ~/Documents as root directory to given path component.
-	open func directoryURLByAppendingPath(_ path: String) -> URL {
+	public func directoryURLByAppendingPath(_ path: String) -> URL {
 		return documentsDirectoryURL.appendingPathComponent(path)
 	}
 	
@@ -80,7 +80,7 @@ open class IWFileManager {
 	
 	// MARK: - File System Methods
 	
-	open func createEmptyTextFile(named fileName: String, inDirectoryURL directoryURL: URL, completion: Callback?) {
+	public func createEmptyTextFile(named fileName: String, inDirectoryURL directoryURL: URL, completion: Callback?) {
 		let data = ("").data(using: String.Encoding.utf8)!
 		
 		coordinationQueue.addOperation {
@@ -107,7 +107,7 @@ open class IWFileManager {
 		}
 	}
 	
-	open func createDirectory(named directoryName: String, inDirectoryURL directoryURL: URL, completion: Callback?) {
+	public func createDirectory(named directoryName: String, inDirectoryURL directoryURL: URL, completion: Callback?) {
 		
 		coordinationQueue.addOperation {
 			let baseURL = directoryURL.appendingPathComponent(directoryName, isDirectory: true)
@@ -135,7 +135,7 @@ open class IWFileManager {
 		
 	}
 	
-	open func createTemplateProject(named templateName: String, fromTemplateURL templateURL: URL, inDirectoryURL directoryURL: URL, completion: Callback?) {
+	public func createTemplateProject(named templateName: String, fromTemplateURL templateURL: URL, inDirectoryURL directoryURL: URL, completion: Callback?) {
 		
 		coordinationQueue.addOperation {
 			let baseURL = directoryURL.appendingPathComponent(templateName, isDirectory: true)
@@ -163,7 +163,7 @@ open class IWFileManager {
 		}
 	}
 	
-	open func move(itemAtURL sourceURL: URL, intoDirectoryURL directoryURL: URL, completion: Callback?) {
+	public func move(itemAtURL sourceURL: URL, intoDirectoryURL directoryURL: URL, completion: Callback?) {
 		
 		coordinationQueue.addOperation {
 			
@@ -205,7 +205,7 @@ open class IWFileManager {
 		
 	}
 	
-	open func rename(itemAtURL sourceURL: URL, usingName name: String, completion: Callback?) {
+	public func rename(itemAtURL sourceURL: URL, usingName name: String, completion: Callback?) {
 		
 		coordinationQueue.addOperation {
 			
@@ -251,7 +251,7 @@ open class IWFileManager {
 		
 	}
 	
-	open func delete(itemAtURL url: URL, completion: @escaping ()->Void) {
+	public func delete(itemAtURL url: URL, completion: @escaping ()->Void) {
 		
 		coordinationQueue.addOperation {
 			let writeIntent = NSFileAccessIntent.writingIntent(with: url, options: .forDeleting)
