@@ -25,15 +25,15 @@ let fileManager = IWFileManager.sharedInstance
 It provides a nice, Swifty interface for basic file operations, including move, rename, and delete.
 
 ```Swift
-fileManager.move(itemAtURL: fileURL, intoDirectoryURL: directoryURL) { (newURL) in
+fileManager.move(itemAt: fileURL, into: directoryURL) { (newURL) in
 	print("Item moved to: \(newURL)")
 }
 
-fileManager.rename(itemAtURL: fileURL, usingName: "New Name") { (newURL) in
+fileManager.rename(itemAt: fileURL, using: "New Name") { (newURL) in
 	print("Item renamed to: \(newURL)")
 }
 
-fileManager.delete(itemAtURL: fileURL) { 
+fileManager.delete(itemAt: fileURL) { 
 	print("Item deleted")
 }
 ```
@@ -43,7 +43,7 @@ fileManager.delete(itemAtURL: fileURL) {
 ```Swift
 let directoryURL = fileManager.directoryURLByAppendingPath("") // Appends path to ~/Documents
 
-let nodes = fileManager.deepDirectoryModel(forDirectoryURL: directoryURL)
+let nodes = fileManager.deepDirectoryModel(for: directoryURL)
 
 for node in nodes {
 	print(node)
@@ -56,15 +56,15 @@ File conflicts are automatically avoided by renaming the new URL.
 Also included are some convenient functions for initializing files and directories.
 
 ```Swift
-fileManager.createEmptyTextFile(named: "Text File", inDirectoryURL: directoryURL) { (newURL) in
+fileManager.createEmptyTextFile(named: "Text File", in: directoryURL) { (newURL) in
 	print("UTF8 encoded file at: \(newURL)")
 }
 
-fileManager.createDirectory(named: "Folder", inDirectoryURL: directoryURL) { (newURL) in
+fileManager.createDirectory(named: "Folder", in: directoryURL) { (newURL) in
 	print("Empty folder at: \(newURL)")
 }
 
-fileManager.createTemplateProject(named: "Template", fromTemplateURL: templateURL, inDirectoryURL: directoryURL) { (newURL) in
+fileManager.createTemplateProject(named: "Template", using: templateURL, in: directoryURL) { (newURL) in
 	print("\(newURL) created from template")
 }
 ```

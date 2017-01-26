@@ -6,11 +6,11 @@
 //  Copyright © 2016 Dylan McArthur. All rights reserved.
 //
 
-open class IWFileManager {
+public class IWFileManager {
 	
 	// MARK: - Singleton
 	
-	open static let sharedManager: IWFileManager = {
+	public static let sharedManager: IWFileManager = {
 		let fileManager = Foundation.FileManager()
 		let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
 		
@@ -42,11 +42,11 @@ open class IWFileManager {
 	
 	// MARK: - Query Methods
 	
-	open func directoryURLByAppendingPath(_ path: String) -> URL {
+	public func directoryURLByAppendingPath(_ path: String) -> URL {
 		return documentsDirectoryURL.appendingPathComponent(path)
 	}
 	
-	open func directoryModel(forDirectoryURL directoryURL: URL) -> [FileNode] {
+	public func directoryModel(for directoryURL: URL) -> [FileNode] {
 		let files = try! fileManager.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: [URLResourceKey(rawValue: kCFURLContentModificationDateKey as String as String), URLResourceKey(rawValue: kCFURLIsDirectoryKey as String as String)], options: [])
 		
 		var model = [FileNode]()
@@ -65,7 +65,7 @@ open class IWFileManager {
 		return model
 	}
 	
-	open func deepDirectoryModel(forDirectoryURL directoryURL: URL) -> [FileNode] {
+	public func deepDirectoryModel(for directoryURL: URL) -> [FileNode] {
 		var nodes = [FileNode]()
 		
 		let enumerator = fileManager.enumerator(at: directoryURL, includingPropertiesForKeys: [URLResourceKey.isDirectoryKey], options: .skipsHiddenFiles, errorHandler: nil)
@@ -92,7 +92,7 @@ open class IWFileManager {
 	
 	// MARK: - File System Methods
 	
-	open func createEmptyTextFile(named fileName: String, inDirectoryURL directoryURL: URL, completion: Callback?) {
+	public func createEmptyTextFile(named fileName: String, in directoryURL: URL, completion: Callback?) {
 		let data = ("").data(using: String.Encoding.utf8)!
 		
 		coordinationQueue.addOperation {
@@ -119,7 +119,7 @@ open class IWFileManager {
 		}
 	}
 	
-	open func createDirectory(named directoryName: String, inDirectoryURL directoryURL: URL, completion: Callback?) {
+	public func createDirectory(named directoryName: String, in directoryURL: URL, completion: Callback?) {
 		
 		coordinationQueue.addOperation {
 			let baseURL = directoryURL.appendingPathComponent(directoryName, isDirectory: true)
@@ -147,7 +147,7 @@ open class IWFileManager {
 		
 	}
 	
-	open func createTemplateProject(named templateName: String, fromTemplateURL templateURL: URL, inDirectoryURL directoryURL: URL, completion: Callback?) {
+	public func createTemplateProject(named templateName: String, using templateURL: URL, in directoryURL: URL, completion: Callback?) {
 		
 		coordinationQueue.addOperation {
 			let baseURL = directoryURL.appendingPathComponent(templateName, isDirectory: true)
@@ -175,7 +175,7 @@ open class IWFileManager {
 		}
 	}
 	
-	open func move(itemAtURL sourceURL: URL, intoDirectoryURL directoryURL: URL, completion: Callback?) {
+	public func move(itemAt sourceURL: URL, into directoryURL: URL, completion: Callback?) {
 		
 		coordinationQueue.addOperation {
 			
@@ -217,7 +217,7 @@ open class IWFileManager {
 		
 	}
 	
-	open func rename(itemAtURL sourceURL: URL, usingName name: String, completion: Callback?) {
+	public func rename(itemAt sourceURL: URL, using name: String, completion: Callback?) {
 		
 		coordinationQueue.addOperation {
 			
@@ -263,7 +263,7 @@ open class IWFileManager {
 		
 	}
 	
-	open func delete(itemAtURL url: URL, completion: @escaping ()->Void) {
+	public func delete(itemAt url: URL, completion: @escaping ()->Void) {
 		
 		coordinationQueue.addOperation {
 			let writeIntent = NSFileAccessIntent.writingIntent(with: url, options: .forDeleting)
